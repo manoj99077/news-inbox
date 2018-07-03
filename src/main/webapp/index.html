@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+<body>
+
+<div ng-app="myApps">
+ 
+
+
+<div ng-controller="user">
+<table width="100%">
+	<tr>
+		<td>
+		<h1>Registration</h1> 
+				<table>
+					<tr>
+						<td>Name</td><td><input type="text" name="name" ng-model="user.name"></td>
+					</tr>
+					<tr>
+						<td>mobile</td><td><input type="text" name="phoneNumber" ng-model="user.phoneNumber"></td>
+					</tr>
+					<tr>
+						<td>email</td><td><input type="text" name="email" ng-model="user.email"></td>
+					</tr>
+					<tr>
+						<td>address</td><td><input type="text" name="address" ng-model="user.address"></td>
+					</tr>
+					<tr>
+						<td>pin code</td><td><input type="text" name="pinCode" ng-model="user.pinCode"></td>
+					</tr>
+					<tr>
+						<td></td><td><input type="button" ng-click="register();" value="Register"></td>
+					</tr>
+				</table>
+		</td>
+		<td>
+		
+					<h1>Registered user</h1>
+	
+					<table border="1" style="border-collapse: collapse;" width="100%">
+						<tr >
+							<th>#</th>
+							<th>Name</th>
+							<th>Email</th>
+							<th>Dob</th>
+							<th>Account Type</th>
+							<th>Registered Date</th>
+							<th>User Name</th>
+							<th>Status</th>
+						</tr>
+						<tr ng-repeat="user in userList">
+							<td>{{$index+1}}</td>
+							<td>{{user.name}}</td>
+							<td>{{user.email}}</td>
+							<td>{{user.dob | date:'dd-MM-yyyy'}}</td>
+							<td>{{user.accountType}}</td>
+							<td>{{user.creationDate | date:'dd-MM-yyyy HH:mm'}}</td>
+							<td>{{user.userName}}</td>
+							<td>{{user.status}}</td>			
+						</tr>
+					</table>
+		
+		</td>
+	</tr>
+</table>
+	
+	
+	
+ 
+
+	<div>{{errorMsg}}</div>
+</div>
+
+</div>
+
+</body>
+</html>
+
+<script>
+var app = angular.module('myApps', []);
+ 
+
+app.controller('user', function($scope,$http) {
+
+var user = {};
+	
+	$scope.register = function(){	
+		$http({
+			method : "POST",
+			url : "/user/save",
+			data: $scope.user
+				}).then(function mySuccess(response) {
+					user = {};
+					$scope.userList.push(response.data);
+				}, function myError(response) {
+					$scope.errorMsg = response.statusText;
+				});
+	}
+	
+	$scope.listUser = function(){
+			$http({
+			method : "GET",
+			url : "/user/findAll"
+				}).then(function mySuccess(response) {
+					$scope.userList = response.data;
+				}, function myError(response) {
+					$scope.errorMsg = response.statusText;
+				});
+	}
+	$scope.listUser();
+	
+ 
+});
+</script>

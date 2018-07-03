@@ -1,0 +1,4 @@
+com\jll\controller\BookController.class
+com\jll\app\Application.class
+com\jll\domain\Book.class
+com\jll\repository\BookRepository.class

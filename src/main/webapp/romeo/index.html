@@ -1,0 +1,276 @@
+ <html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Welcome to Romeo</title>
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../css/jquery-ui.css">
+  
+  <script src="../js/jquery-1.12.4.js"></script>
+   <script src="../js/jquery-ui.js"></script>
+  
+  <script src="../js/bootstrap.min.js"></script>
+<style>
+	body{    
+	padding: 0px;
+    margin: 0px;
+   /*  background-color: #333; */
+    font-family:helvetica;
+    }
+   
+   table {
+    border-collapse: collapse;
+    
+}
+  
+    th {
+    background-color: #00a63f;
+    color: white;
+}
+
+
+.btn {
+   border:2px solid #00a63f;
+  font-family: Arial;
+  color: #00a63f;
+  font-size: 20px;
+  background-color:#f1f1f1;
+  padding: 10px 45px 10px 45px;
+  text-decoration: none;
+}
+
+.btn:hover {
+  background: #00a63f;
+  text-decoration: none;
+  cursor: pointer;
+  color:#fff;
+ 
+}
+
+.loginBtn {
+   border:1px solid #fff;
+  
+  color: #fff;
+ 
+  background-color:#00a63f;
+  padding: 5px 10px 5px 10px;
+  text-decoration: none;
+}
+
+.loginBtn:hover {
+  background: #00a63f;
+  text-decoration: none;
+  cursor: pointer;
+  color:#fff;
+ 
+}
+ 
+ .userList {
+ background-color: #fff; 
+ }
+ .userList li{
+ 	padding: 10px;
+  	
+ 	list-style-type: none;
+ }
+  .userList li:hover{
+ 	cursor: pointer;
+ }
+ 
+ .ui-autocomplete-loading {
+		background: white url("images/ui-anim_basic_16x16.gif") right center no-repeat;
+	}
+</style>
+</head>
+<body>
+<table align="center" width="100%" >
+	<tr>
+		<th>
+			<div style="float:left;">
+				<h3 style="text-align:left;margin-left:150px;">Welcome Romeo</h3>
+			</div>
+			<div style="cursor: pointer;text-align:right;padding:10px;">
+				<span id="logout" >Logout</span>
+			</div> 
+		</th>
+	 
+	</tr>
+	<tr>		 
+		<td>
+			<table  width="100%"  >	 
+				<tr>
+					<td width="15%" height="600px" valign="top" style="padding:10px;background-color: #f1f1f1">
+						<ul class="userList">
+							 <li><strong>Online User</strong></li>
+						</ul>
+						<input type="email" placeholder="Enter Email" size="11"><input type="button" value="Invite">
+					</td>
+					<td width="60%" valign="top">
+						user area 
+					</td>
+					<td  valign="top" style="padding:10px;background-color: #f1f1f1">
+						user area 
+					</td>
+				</tr>
+				
+			</table>
+			
+		</td>
+	</tr>
+ 
+</table>
+<script>
+
+function createUser(){
+
+var name =	$("#name").val();
+var email =	$("#email").val();
+var dob =	new Date($("#datepicker").val()).getTime();
+
+var password =	$("#password").val();
+if($('#male').is(':checked')) { 
+	gender =  $('#male').val();
+}else{
+	gender = $('#feMale').val();
+}
+
+
+user.name = name;
+user.email = email;
+user.dob = dob;
+user.password = password;
+user.gender = gender;
+
+user.accountType="PERSONAL"; 
+user.userName = email.split("@")["0"];
+
+$.ajax({
+	  url:"user/save",
+	  type:"post",
+	  data:JSON.stringify(user),
+	  contentType:"application/json; charset=utf-8",
+	  dataType:"json",
+	  success: function(){
+	   alert("Successfully Registered Thank you!");
+	   window.location = "./user/";
+	  }
+	})
+
+}
+
+function filterLocation(location){
+	locationArray = []; 
+	location.forEach(function(item,index){
+		locationObject = {};
+		locationObject.id = item.place_id;
+		locationObject.label = item.description;
+		locationObject.value = item.description;
+		locationArray.push(locationObject);
+			//console.log("item:"+item+ " index "+index);
+		})
+		return locationArray;
+}
+
+function filterSelectedLocation(location){
+	 	locationObject = {};		 
+		locationObject.coordinates = [];
+		locationObject.googlePlaceId = location.place_id;
+		locationObject.formattedAddress = location.formatted_address;
+		locationObject.name = location.name;
+		locationObject.coordinates.push(location.geometry.location.lat);
+		locationObject.coordinates.push(location.geometry.location.lng);
+
+
+		location.address_components.forEach(function(item,index){
+  				if(item.types["0"]=="country"){
+  					locationObject.country = item.long_name;
+  	  				}
+  				if(item.types["0"]=="administrative_area_level_1"){
+  					locationObject.state = item.long_name;
+  	  				}
+  				if(item.types["0"]=="administrative_area_level_2"){
+  					locationObject.city = item.long_name;
+  	  				}
+  				if(item.types["0"]=="locality"){
+  					locationObject.street = item.long_name;
+  	  				} 
+			})
+	 
+ 
+		return locationObject;
+}
+
+$( function() { 
+
+	user = {}; 
+	
+			$( "#location" ).autocomplete({
+			      source: function( request, response ) {
+			        $.ajax( {
+			          url: "gmap/getGoogleLocations",
+			           
+			          data: {
+			        	  query: request.term
+			          },
+			          success: function(data) {				          
+			            response(filterLocation(data.predictions));
+			          }
+			        });
+			      },
+			      minLength: 2,
+			      select: function( event, ui ) {
+			       // log( "Selected: " + ui.item.value + " aka " + ui.item.id );
+			        $.ajax( {
+				          url: "gmap/resolveGooglePlaceById",
+				           
+				          data: {
+				        	  id: ui.item.id
+				          },
+				          success: function(data) {	
+
+				        	  	//create meta location
+				        	  	
+				        	  	$.ajax({
+								  url:"locations/createMetaLocations",
+								  type:"post",
+								  data:JSON.stringify(filterSelectedLocation(data.result)),
+								  contentType:"application/json; charset=utf-8",
+								  dataType:"json",
+								  success: function(result){
+									  user.geolocation  = result;
+								  }
+								})
+					          			          
+				        	  
+				            
+				          }
+				        });
+			      }
+			    } );
+
+
+			
+
+			$.ajax( {
+		          url: "../user/filterUser",		           
+		          success: function(data) {	
+			          data.forEach(function(item,index){
+			        	  	$(".userList").append("<li>"+item.name+"</li>");
+				          })
+ 						
+		          }
+		        });
+
+			
+			$( "#datepicker" ).datepicker({
+			      changeMonth: true,
+			      changeYear: true,
+			      yearRange: "-100:+0"
+			    });
+
+		    
+  } );
+</script>
+
+</body>
+</html>
